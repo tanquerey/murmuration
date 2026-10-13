@@ -14,7 +14,12 @@ fn main() {
     let dt = 1.0;
     let mut true_position = Vector3::new(20.0, -60.0, 0.0);
     let true_velocity = Vector3::new(0.0, 5.0, 0.0);
-    let sensor_position = Vector3::new(0.0, 0.0, 0.0);
+    let noise_std = 0.02; // radians, ~1.1 degrees
+
+    let sensor_position1 = Vector3::new(0.0, 0.0, 0.0);
+    let sensor_position2 = Vector3::new(80.0, 0.0, 0.0);
+    let sensor1 = BearingSensor::new(sensor_position1, noise_std);
+    let sensor2 = BearingSensor::new(sensor_position2, noise_std);
 
     let mut bearing_track = Track::new(
         1,
@@ -23,22 +28,21 @@ fn main() {
             400.0, 400.0, 400.0, 25.0, 25.0, 25.0,
         )),
         ConstantVelocityModel::new(0.05),
-        BearingSensor::new(sensor_position, 0.02),
     );
 
     let mut rng = StdRng::seed_from_u64(42);
-    let noise_std = 0.02; // radians, ~1.1 degrees
 
     for step in 0..30 {
         true_position += true_velocity * dt;
 
-        let dx = true_position.x - sensor_position.x;
-        let dy = true_position.y - sensor_position.y;
-        let true_bearing = dy.atan2(dx);
-        let noisy_bearing = true_bearing + rng.gen_range(-noise_std..noise_std);
+        let noisy1 =
+            bearing(sensor_position1, true_position) + rng.gen_range(-noise_std..noise_std);
+        let noisy2 =
+            bearing(sensor_position2, true_position) + rng.gen_range(-noise_std..noise_std);
 
         bearing_track.predict(dt);
-        bearing_track.update(DVector::from_vec(vec![noisy_bearing]));
+        bearing_track.update(&sensor1, DVector::from_vec(vec![noisy1]));
+        bearing_track.update(&sensor2, DVector::from_vec(vec![noisy2]));
 
         let est = bearing_track.position();
         println!(
@@ -51,4 +55,8 @@ fn main() {
             bearing_track.covariance[(1, 1)]
         );
     }
+}
+
+fn bearing(from: Vector3<f64>, to: Vector3<f64>) -> f64 {
+    (to.y - from.y).atan2(to.x - from.x)
 }

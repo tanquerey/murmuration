@@ -10,7 +10,7 @@ pub struct AssociationResult {
 }
 
 pub fn nearest_neighbor_association(
-    tracks: &[Track<ConstantVelocityModel, PositionSensor>],
+    tracks: &[Track<ConstantVelocityModel>],
     detections: &[Vector3<f64>],
     gate_distance: f64,
 ) -> AssociationResult {
