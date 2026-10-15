@@ -7,3 +7,4 @@ pub mod motion;
 pub mod measurement;
 pub mod track;
 pub mod association;
+pub mod gating;
