@@ -1,4 +1,3 @@
-use murmuration::association::nearest_neighbor_association;
 use murmuration::measurement::{BearingSensor, PositionSensor};
 use murmuration::motion::ConstantVelocityModel;
 use murmuration::track::Track;
